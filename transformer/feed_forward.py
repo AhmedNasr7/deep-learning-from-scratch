@@ -7,7 +7,7 @@ Applied independently to each position in the sequence.
 
 import torch
 import torch.nn as nn
-
+from transformer.activations import GELU
 
 class PositionWiseFeedForward(nn.Module):
     """
@@ -27,9 +27,17 @@ class PositionWiseFeedForward(nn.Module):
 
         self.fc1 = nn.Linear(d_model, d_ff)
         self.fc2 = nn.Linear(d_ff, d_model)
+        self.gelu = GELU()
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # your code here
         # fc1 → activation (ReLU for transformer, GELU for GPT/ViT) → dropout → fc2
-        raise NotImplementedError
+        
+        x = self.fc1(x)
+        x = self.gelu(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+
+        return x
+
+

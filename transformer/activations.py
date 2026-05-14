@@ -6,7 +6,7 @@ Implement from scratch — no torch.nn.functional.relu / gelu.
 
 import torch
 import torch.nn as nn
-
+import math
 
 class ReLU(nn.Module):
     """
@@ -17,8 +17,7 @@ class ReLU(nn.Module):
     """
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # your code here
-        raise NotImplementedError
+        return torch.where(x > 0, x, 0)
 
 
 class GELU(nn.Module):
@@ -32,18 +31,16 @@ class GELU(nn.Module):
     """
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # your code here
-        raise NotImplementedError
+        return 0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * x.pow(3))))
+
 
 
 # Functional aliases for convenience
 def relu(x: torch.Tensor) -> torch.Tensor:
     """Functional ReLU — see ReLU class."""
-    # your code here
-    raise NotImplementedError
+    return torch.where(x > 0, x, 0)
 
 
 def gelu(x: torch.Tensor) -> torch.Tensor:
     """Functional GELU — see GELU class."""
-    # your code here
-    raise NotImplementedError
+    return 0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * x.pow(3))))

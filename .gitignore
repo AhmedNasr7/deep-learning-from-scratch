@@ -44,3 +44,6 @@ logs/
 
 # HuggingFace cache
 .cache/
+
+# Internal reference docs
+.internal/

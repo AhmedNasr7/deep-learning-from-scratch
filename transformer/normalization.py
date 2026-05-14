@@ -34,4 +34,15 @@ class LayerNorm(nn.Module):
         # 1. Compute mean and variance across last dim
         # 2. Normalize: (x - mean) / sqrt(var + eps)
         # 3. Scale and shift: gamma * x_norm + beta
-        raise NotImplementedError
+
+        mean = x.mean(dim=-1, keepdim=True)
+        var = x.var(dim=-1, keepdim=True, unbiased=False)
+
+        x_norm = (x - mean) / torch.sqrt(var + self.eps)
+        
+        return self.gamma * x_norm + self.beta
+
+
+
+    
+        
