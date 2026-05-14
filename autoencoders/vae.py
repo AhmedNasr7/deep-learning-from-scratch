@@ -100,20 +100,21 @@ class VAE(nn.Module):
     @staticmethod
     def loss_function(x_recon: torch.Tensor, x: torch.Tensor,
                       mu: torch.Tensor, log_var: torch.Tensor,
-                      beta: float = 1.0) -> torch.Tensor:
+                      beta: float = 1.0) -> dict:
         """
-        VAE loss = reconstruction + β * KL divergence.
+        VAE ELBO loss = reconstruction + β · KL divergence.
 
         Args:
-            x_recon: reconstructed image
-            x:       original image
+            x_recon: reconstructed output
+            x:       original input
             mu, log_var: encoder outputs
             beta:    KL weight (β-VAE, higher = more disentangled)
 
         Returns:
-            scalar loss
+            dict with "loss" (tensor), "recon_loss" (float), "kl_loss" (float)
         """
         # your code here
-        # recon_loss = F.binary_cross_entropy or F.mse_loss
-        # kl_loss = -0.5 * sum(1 + log_var - mu² - exp(log_var))
+        # recon_loss = F.mse_loss(x_recon, x, reduction="sum") / batch_size
+        # kl_loss = -0.5 * sum(1 + log_var - mu² - exp(log_var)) / batch_size
+        # total = recon_loss + beta * kl_loss
         raise NotImplementedError

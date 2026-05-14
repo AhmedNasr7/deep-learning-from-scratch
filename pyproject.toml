@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dl-from-scratch"
+version = "0.1.0"
+description = "Deep learning architectures implemented from scratch in PyTorch"
+requires-python = ">=3.10"
+
+dependencies = [
+    "torch",
+    "torchvision",
+    "torchaudio",
+    "datasets",
+    "matplotlib",
+    "numpy",
+    "scikit-learn",
+    "librosa",
+    "ipywidgets",
+    "jupyter",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "attention",
+    "positional_encoding",
+    "tokenizers",
+    "transformer",
+    "vit",
+    "gpt",
+    "autoencoders",
+    "diffusion",
+    "flow_matching",
+    "fourier_features",
+    "neural_implicit_representation",
+    "visualization",
+    "nn_modules",
+    "losses_and_metrics",
+    "autograd",
+    "optimizers",
+]

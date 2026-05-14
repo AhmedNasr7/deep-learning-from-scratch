@@ -1,26 +1,23 @@
 """
 Tokenizer adapter for GPT-2.
 
-Wraps the BPE tokenizers from the tokenizers/ module, adding
-special token handling (PAD, BOS, EOS) needed for language modeling.
-
-Plug in either NaiveBPETokenizer or EfficientBPETokenizer.
+Wraps EfficientBPETokenizer and adds special token handling
+(PAD, BOS, EOS) needed for language modeling.
 """
 
 from typing import List
 
-# Import your tokenizer of choice:
-# from tokenizers import NaiveBPETokenizer, EfficientBPETokenizer
+from tokenizers import EfficientBPETokenizer
 
 
 class GPTTokenizer:
     """
-    Wrapper around your BPE tokenizer for GPT-2 usage.
+    Wrapper around EfficientBPETokenizer for GPT-2 usage.
 
     Adds special tokens on top of the BPE vocab:
-      PAD = vocab_size
-      BOS = vocab_size + 1
-      EOS = vocab_size + 2
+      PAD = bpe_vocab_size
+      BOS = bpe_vocab_size + 1
+      EOS = bpe_vocab_size + 2
 
     Usage:
         tokenizer = GPTTokenizer()
@@ -30,7 +27,7 @@ class GPTTokenizer:
     """
 
     def __init__(self):
-        self.bpe = None  # Set after train() or load()
+        self.bpe = EfficientBPETokenizer()
         self._pad_id = None
         self._bos_id = None
         self._eos_id = None
@@ -38,8 +35,6 @@ class GPTTokenizer:
     @property
     def vocab_size(self) -> int:
         """Total vocab including special tokens."""
-        if self.bpe is None:
-            return 0
         return len(self.bpe.vocab) + 3  # PAD, BOS, EOS
 
     @property
@@ -62,17 +57,30 @@ class GPTTokenizer:
             text:              raw training corpus
             target_vocab_size: desired BPE vocab size (before adding special tokens)
         """
-        # your code here
-        # 1. Instantiate and train your BPE tokenizer
-        # 2. Set special token IDs (after BPE vocab)
-        raise NotImplementedError
+        self.bpe.train(text, target_vocab_size)
 
-    def encode(self, text: str) -> List[int]:
-        """Encode text to token IDs using trained BPE."""
-        # your code here
-        raise NotImplementedError
+        bpe_size = len(self.bpe.vocab)
+        self._pad_id = bpe_size
+        self._bos_id = bpe_size + 1
+        self._eos_id = bpe_size + 2
+
+        return self
+
+    def encode(self, text: str, add_special: bool = False) -> List[int]:
+        """
+        Encode text to token IDs using trained BPE.
+
+        Args:
+            text:        raw text string
+            add_special: if True, wraps with [BOS] ... [EOS]
+        """
+        ids = self.bpe.encode(text)
+        if add_special:
+            ids = [self._bos_id] + ids + [self._eos_id]
+        return ids
 
     def decode(self, token_ids: List[int]) -> str:
         """Decode token IDs back to text, filtering special tokens."""
-        # your code here
-        raise NotImplementedError
+        special = {self._pad_id, self._bos_id, self._eos_id}
+        filtered = [t for t in token_ids if t not in special]
+        return self.bpe.decode(filtered)
