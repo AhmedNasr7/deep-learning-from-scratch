@@ -5,9 +5,10 @@ The fundamental attention operation. All other attention variants
 build on top of or modify this.
 """
 
+import torch.nn.functional as F
 import torch
 import torch.nn as nn
-
+import math
 
 class ScaledDotProductAttention(nn.Module):
     """
@@ -30,5 +31,16 @@ class ScaledDotProductAttention(nn.Module):
         V: torch.Tensor,
         mask: torch.Tensor = None,
     ) -> torch.Tensor:
-        # your code here
-        raise NotImplementedError
+
+        d_k = K.shape[-1]
+        attn_scores = Q @ K.transpose(-2, -1) / math.sqrt(d_k)
+        if mask is not None:
+            attn_scores = attn_scores.masked_fill_(mask, float('-inf'))
+        attn_weights = F.softmax(attn_scores, dim=-1)
+        self.attn_weights = attn_weights.detach()
+        output = attn_weights @ V
+
+        return output
+
+
+        

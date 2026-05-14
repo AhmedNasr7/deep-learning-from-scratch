@@ -58,9 +58,29 @@ class MultiHeadAttention(nn.Module):
         V: torch.Tensor,
         mask: torch.Tensor = None,
     ) -> torch.Tensor:
-        # your code here
         # 1. Project Q, K, V
         # 2. Reshape to (batch, n_heads, seq, d_k)
         # 3. Apply ScaledDotProductAttention per head
         # 4. Concatenate heads, project with W_o
-        raise NotImplementedError
+
+        Q = self.W_q(Q)
+        K = self.W_k(K)
+        V = self.W_v(V)
+
+        B, seq_q, d_model = Q.shape
+        _, seq_k, _ = K.shape
+        Q = Q.reshape(B, seq_q, self.n_heads, self.d_k).permute(0, 2, 1, 3)
+        K = K.reshape(B, seq_k, self.n_heads, self.d_k).permute(0, 2, 1, 3)
+        V = V.reshape(B, seq_k, self.n_heads, self.d_k).permute(0, 2, 1, 3)
+
+        output = self.attention(Q, K, V, mask)
+
+        output = output.permute(0, 2, 1, 3).reshape(B, seq_q, self.d_model) 
+        output = self.W_o(output)
+        output = self.dropout(output)
+
+        return output
+
+
+
+
