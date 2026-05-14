@@ -12,7 +12,7 @@ This file is designed to grow — add variants here:
 
 import torch
 import torch.nn as nn
-
+import math
 
 class SinusoidalPositionalEncoding(nn.Module):
     """
@@ -43,7 +43,15 @@ class SinusoidalPositionalEncoding(nn.Module):
         # 3. Fill even columns with sin, odd columns with cos
         # 4. Register as a buffer (not a parameter — not learned)
         #    self.register_buffer('pe', pe)
-        raise NotImplementedError
+        pe = torch.zeros(max_seq_len, d_model, dtype=torch.float32)
+        pos = torch.arange(max_seq_len).unsqueeze(1) 
+        div_term = torch.exp(torch.arange(0, d_model, 2) * -(math.log(10000.0) / d_model))
+
+        pe[:, 0::2] = torch.sin(pos * div_term)
+        pe[:, 1::2] = torch.cos(pos * div_term)
+
+        self.register_buffer('pe', pe.unsqueeze(0))  # (1, max_seq_len, d_model)
+
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -54,4 +62,5 @@ class SinusoidalPositionalEncoding(nn.Module):
         """
         # your code here
         # Slice self.pe to match seq_len, add to x, apply dropout
-        raise NotImplementedError
+        x = x + self.pe[:, :x.size(1)]
+        return self.dropout(x)

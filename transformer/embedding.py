@@ -36,18 +36,23 @@ class TransformerEmbedding(nn.Module):
         super().__init__()
         self.d_model = d_model
 
-        # your code here
         # 1. Create token embedding (nn.Embedding or nn.Parameter)
         # 2. Create positional encoding (reuse SinusoidalPositionalEncoding)
-        raise NotImplementedError
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_encoding = SinusoidalPositionalEncoding(max_seq_len=max_seq_len, dropout=dropout, d_model=d_model)
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
         """
         Input:  (batch, seq_len) of token IDs
         Output: (batch, seq_len, d_model) — embedded and position-encoded
         """
-        # your code here
         # 1. Lookup token embeddings
         # 2. Scale by sqrt(d_model) — "Attention Is All You Need" Sec 3.4
         # 3. Add positional encoding
-        raise NotImplementedError
+
+        embeds = self.embedding(tokens) * math.sqrt(self.d_model)
+        return self.pos_encoding(embeds)
+
+
+
+
