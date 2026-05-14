@@ -1,0 +1,25 @@
+# Core
+torch
+torchvision
+torchaudio
+numpy
+
+# Data
+datasets
+scikit-learn
+
+# Visualization
+matplotlib
+ipywidgets
+
+# Audio processing
+librosa
+
+# Notebooks
+jupyter
+
+# HuggingFace & Utils
+transformers
+tokenizers
+tqdm
+seaborn
