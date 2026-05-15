@@ -107,7 +107,6 @@ class GPT2(nn.Module):
         Returns:
             (1, prompt_len + max_new_tokens) generated token IDs
         """
-        # your code here
         # Loop max_new_tokens times:
         #   1. Forward pass on current sequence (truncate to max_seq_len if needed)
         #   2. Get logits for last position, apply temperature
