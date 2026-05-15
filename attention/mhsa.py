@@ -35,9 +35,12 @@ class FusedMultiHeadSelfAttention(nn.Module):
         
 
         qkv = self.qkv_proj(x) # fused projection: more efficient
-        B, seq, d_3 = qkv.shape
-        qkv = qkv.reshape(B, seq, self.n_heads, -1).permute(0, 2, 1, 3) # (B, n_heads, seq, 3 * d_model)
-        q, k, v = qkv.split(self.d_k, dim=-1)  # (B, n_heads, seq, d_model) each 
+        B, seq, _ = qkv.shape
+
+        # Separate the 3 (Q/K/V) BEFORE distributing to heads
+        # (B, seq, 3*d_model) -> (B, seq, 3, n_heads, d_k) -> (3, B, n_heads, seq, d_k)
+        qkv = qkv.reshape(B, seq, 3, self.n_heads, self.d_k).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]  # each: (B, n_heads, seq, d_k)
 
         attn = self.attention(q, k, v, mask)
         attn = attn.permute(0, 2, 1, 3).reshape(B, seq, self.d_model)
