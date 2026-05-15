@@ -3,11 +3,6 @@ Multi-Head Attention.
 
 Projects Q, K, V into multiple heads, runs ScaledDotProductAttention
 per head in parallel, concatenates and projects back.
-
-This file is designed to grow — add variants here:
-  - MultiQueryAttention (MQA)
-  - GroupedQueryAttention (GQA)
-  - etc.
 """
 
 import torch
@@ -80,7 +75,6 @@ class MultiHeadAttention(nn.Module):
         output = self.dropout(output)
 
         return output
-
 
 
 
