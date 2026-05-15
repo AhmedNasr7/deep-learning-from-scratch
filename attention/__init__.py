@@ -1,2 +1,3 @@
 from .scaled_dot_product import ScaledDotProductAttention
 from .multi_head import MultiHeadAttention
+from .mhsa import FusedMultiHeadSelfAttention
