@@ -1,14 +1,22 @@
 """
 Losses and Metrics — Common loss functions and evaluation metrics from scratch.
 
-Planned files:
-  cross_entropy.py  — CrossEntropyLoss, NLLLoss, BCELoss
-  mse.py            — MSELoss, L1Loss, SmoothL1Loss
-  contrastive.py    — TripletLoss, InfoNCE (contrastive learning)
-  metrics.py        — Accuracy, Precision, Recall, F1, BLEU, Perplexity
+Modules:
+  cross_entropy.py — CrossEntropyLoss, BinaryCrossEntropyLoss, FocalLoss
+  mse.py           — MSELoss, MAELoss, HuberLoss
+  contrastive.py   — ContrastiveLoss, TripletLoss, InfoNCELoss
+  metrics.py       — accuracy, precision_recall_f1, perplexity, bleu_score, mAP
 """
 
-# Future implementations:
-# from .cross_entropy import CrossEntropyLoss
-# from .mse import MSELoss
-# from .metrics import accuracy, bleu_score, perplexity
+from .cross_entropy import CrossEntropyLoss, BinaryCrossEntropyLoss, FocalLoss
+from .mse import MSELoss, MAELoss, HuberLoss
+from .contrastive import ContrastiveLoss, TripletLoss, InfoNCELoss
+from .metrics import accuracy, precision_recall_f1, perplexity, bleu_score, mean_average_precision
+
+__all__ = [
+    "CrossEntropyLoss", "BinaryCrossEntropyLoss", "FocalLoss",
+    "MSELoss", "MAELoss", "HuberLoss",
+    "ContrastiveLoss", "TripletLoss", "InfoNCELoss",
+    "accuracy", "precision_recall_f1", "perplexity", "bleu_score",
+    "mean_average_precision",
+]
