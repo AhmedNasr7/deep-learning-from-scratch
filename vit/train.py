@@ -102,7 +102,7 @@ def train(arch: str, dataset: str, epochs: int, batch_size: int, lr: float):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train ViT")
-    parser.add_argument("--arch", type=str, default="vit_tiny", choices=["vit_tiny", "vit_small", "vit_base"])
+    parser.add_argument("--arch", type=str, default="vit_tiny", choices=["vit_tiny", "vit_small", "vit_base", "vit_large", "vit_huge"])
     parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "tiny-imagenet"])
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch_size", type=int, default=128)
