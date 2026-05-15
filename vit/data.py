@@ -12,14 +12,18 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-def get_cifar10_loaders(batch_size: int = 128, num_workers: int = 4) -> tuple:
+def get_cifar10_loaders(batch_size: int = 128, num_workers: int = -1) -> tuple:
     """
     CIFAR-10 with standard augmentation.
 
     Returns: (train_loader, val_loader)
     """
+    # num_workers=0 required on macOS MPS to avoid DataLoader deadlocks
+    if num_workers < 0:
+        num_workers = 0 if torch.backends.mps.is_available() else 4
+
     mean = (0.4914, 0.4822, 0.4465)
-    std = (0.2470, 0.2435, 0.2616)
+    std  = (0.2470, 0.2435, 0.2616)
 
     train_transform = transforms.Compose([
         transforms.RandomCrop(32, padding=4),
@@ -46,12 +50,15 @@ def get_cifar10_loaders(batch_size: int = 128, num_workers: int = 4) -> tuple:
     return train_loader, val_loader
 
 
-def get_tiny_imagenet_loaders(batch_size: int = 128, num_workers: int = 4) -> tuple:
+def get_tiny_imagenet_loaders(batch_size: int = 128, num_workers: int = -1) -> tuple:
     """
     Tiny ImageNet (200 classes, 64×64) via HuggingFace.
 
     Returns: (train_loader, val_loader)
     """
+    if num_workers < 0:
+        num_workers = 0 if torch.backends.mps.is_available() else 4
+
     from datasets import load_dataset
 
     mean = (0.485, 0.456, 0.406)
