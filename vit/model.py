@@ -12,11 +12,11 @@ not a seq2seq model.
 import torch
 import torch.nn as nn
 
-from attention import MultiHeadAttention
+from attention.mhsa import FusedMultiHeadSelfAttention
 from transformer.feed_forward import PositionWiseFeedForward
 from transformer.normalization import LayerNorm
 
-from .patch_embedding import PatchEmbedding
+from .patch_embedding import PatchEmbedding, PatchEmbeddingConv 
 
 
 class ViTEncoderBlock(nn.Module):
@@ -37,16 +37,19 @@ class ViTEncoderBlock(nn.Module):
         super().__init__()
 
         self.norm1 = LayerNorm(embed_dim)
-        self.attn = MultiHeadAttention(embed_dim, n_heads, dropout)
+        self.attn = FusedMultiHeadSelfAttention(embed_dim, n_heads, dropout)
         self.norm2 = LayerNorm(embed_dim)
         self.ffn = PositionWiseFeedForward(embed_dim, int(embed_dim * mlp_ratio), dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # your code here
         # Pre-norm residual:
         # 1. x = x + attn(norm1(x), norm1(x), norm1(x))   (self-attention: Q=K=V)
         # 2. x = x + ffn(norm2(x))
-        raise NotImplementedError
+        x_norm = self.norm1(x)
+        x = x + self.attn(x_norm)
+        x = x + self.ffn(self.norm2(x))
+
+        return x
 
 
 class VisionTransformer(nn.Module):
@@ -83,7 +86,7 @@ class VisionTransformer(nn.Module):
     ):
         super().__init__()
 
-        self.patch_embed = PatchEmbedding(img_size, patch_size, in_channels, embed_dim)
+        self.patch_embed = PatchEmbeddingConv(img_size, patch_size, in_channels, embed_dim)
         num_patches = self.patch_embed.num_patches
 
         # Learnable [CLS] token and position embeddings
@@ -106,14 +109,25 @@ class VisionTransformer(nn.Module):
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # your code here
         # 1. Patch embedding: (B, C, H, W) → (B, N, D)
         # 2. Prepend [CLS] token: (B, N+1, D)
         # 3. Add position embeddings, apply dropout
         # 4. Pass through encoder blocks
         # 5. LayerNorm on [CLS] token output (index 0)
         # 6. Classification head → logits
-        raise NotImplementedError
+
+        x = self.patch_embed(x)
+        prepend_cls_token = self.cls_token.expand(x.shape[0], -1, -1)
+        x = torch.concat([prepend_cls_token, x], dim=1) # prepend 
+        x = self.pos_drop(x + self.pos_embed)
+
+        for block in self.blocks:
+            x = block(x)
+
+        cls_norm = self.norm(x[:, 0, :]) # normalize cls token output
+        out = self.head(cls_norm)
+        return out
+ 
 
 
 def build_vit(arch: str, num_classes: int, img_size: int = 32) -> VisionTransformer:
@@ -124,11 +138,15 @@ def build_vit(arch: str, num_classes: int, img_size: int = 32) -> VisionTransfor
         'vit_tiny':  embed=192,  depth=12, heads=3   → CIFAR-10 (32×32, patch=4)
         'vit_small': embed=384,  depth=12, heads=6   → Tiny ImageNet (64×64, patch=8)
         'vit_base':  embed=768,  depth=12, heads=12  → ImageNet (224×224, patch=16)
+        'vit_large': embed=1024, depth=24, heads=16  → ImageNet (224×224, patch=16)
+        'vit_huge':  embed=1280, depth=32, heads=16  → ImageNet (224×224, patch=16)
     """
     configs = {
         "vit_tiny":  dict(embed_dim=192,  depth=12, n_heads=3,  patch_size=4),
         "vit_small": dict(embed_dim=384,  depth=12, n_heads=6,  patch_size=8),
         "vit_base":  dict(embed_dim=768,  depth=12, n_heads=12, patch_size=16),
+        "vit_large": dict(embed_dim=1024, depth=24, n_heads=16, patch_size=16),
+        "vit_huge":  dict(embed_dim=1280, depth=32, n_heads=16, patch_size=16),
     }
     assert arch in configs, f"Unknown arch '{arch}'. Choose from: {list(configs.keys())}"
 
